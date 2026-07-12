@@ -3,11 +3,17 @@ import com.bank.bankingmanagementsystem.exception.InsufficientBalanceException;
 import com.bank.bankingmanagementsystem.repository.TransactionRepository;
 import com.bank.bankingmanagementsystem.transaction.Transaction;
 
+import com.bank.bankingmanagementsystem.dto.TransactionResponse;
+import java.util.ArrayList;
+
 import java.util.List;
 
 import com.bank.bankingmanagementsystem.entity.Account;
 import com.bank.bankingmanagementsystem.repository.AccountRepository;
 import org.springframework.stereotype.Service;
+import com.bank.bankingmanagementsystem.entity.User;
+import com.bank.bankingmanagementsystem.repository.UserRepository;
+import java.util.Optional;
 
 @Service
 public class AccountService {
@@ -15,12 +21,15 @@ public class AccountService {
     //transaction history
     private final AccountRepository accountRepository;
     private final TransactionRepository transactionRepository;
+    private final UserRepository userRepository;
 
     public AccountService(AccountRepository accountRepository,
-                          TransactionRepository transactionRepository) {
+                          TransactionRepository transactionRepository,
+                          UserRepository userRepository) {
 
         this.accountRepository = accountRepository;
         this.transactionRepository = transactionRepository;
+        this.userRepository = userRepository;
     }
 
     // create acc
@@ -65,6 +74,8 @@ public class AccountService {
             transaction.setAmount(amount);
 
             transaction.setToAccountId(id);
+            transaction.setFromName("Bank");
+            transaction.setToName("My Account");
 
             transactionRepository.save(transaction);
             return accountRepository.save(account);
@@ -85,6 +96,8 @@ public class AccountService {
             transaction.setAmount(amount);
 
             transaction.setFromAccountId(id);
+            transaction.setFromName("My Account");
+            transaction.setToName("Cash");
 
             transactionRepository.save(transaction);
 
@@ -111,10 +124,14 @@ public class AccountService {
             transaction.setTransactionType("TRANSFER");
             transaction.setAmount(amount);
 
-            transactionRepository.save(transaction);
-
             transaction.setFromAccountId(fromId);
             transaction.setToAccountId(toId);
+
+            transaction.setFromName("My Account");
+            transaction.setToName(toAccount.getAccountHolderName());
+
+            System.out.println("Receiver Name = " + toAccount.getAccountHolderName());
+            System.out.println("Transaction ToName = " + transaction.getToName());
 
             transactionRepository.save(transaction);
 
@@ -123,4 +140,49 @@ public class AccountService {
 
         return "Transfer failed";
     }
+    public Account getMyAccount(String email) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return accountRepository.findByUser(user)
+                .orElseThrow(() -> new RuntimeException("Account not found"));
+    }
+
+    public List<TransactionResponse> getMyTransactions(String email) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Account account = accountRepository.findByUser(user)
+                .orElseThrow(() -> new RuntimeException("Account not found"));
+
+        List<Transaction> transactions =
+                transactionRepository.findByFromAccountIdOrToAccountId(
+                        account.getId(),
+                        account.getId()
+                );
+
+        List<TransactionResponse> response = new ArrayList<>();
+
+        for (Transaction transaction : transactions) {
+
+
+            response.add(
+
+                    new TransactionResponse(
+
+                            transaction.getTransactionType(),
+                            transaction.getAmount(),
+                            transaction.getFromName(),
+                            transaction.getToName(),
+                            transaction.getTransactionDate()
+
+                    )
+            );
+        }
+
+        return response;
+    }
+
 }

@@ -1,6 +1,7 @@
 package com.bank.bankingmanagementsystem.transaction;
 
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "transactions")
@@ -16,6 +17,11 @@ public class Transaction {
 
     private Long fromAccountId;
     private Long toAccountId;
+
+    private String fromName;
+    private String toName;
+
+    private LocalDateTime transactionDate = LocalDateTime.now();
 
     public Transaction() {
     }
@@ -53,5 +59,29 @@ public class Transaction {
 
     public void setToAccountId(Long toAccountId) {
         this.toAccountId = toAccountId;
+    }
+
+    public String getFromName() {
+        return fromName;
+    }
+
+    public void setFromName(String fromName) {
+        this.fromName = fromName;
+    }
+
+    public String getToName() {
+        return toName;
+    }
+
+    public void setToName(String toName) {
+        this.toName = toName;
+    }
+
+    public LocalDateTime getTransactionDate() {
+        return transactionDate;
+    }
+
+    public void setTransactionDate(LocalDateTime transactionDate) {
+        this.transactionDate = transactionDate;
     }
 }

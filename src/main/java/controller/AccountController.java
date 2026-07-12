@@ -9,6 +9,10 @@ import com.bank.bankingmanagementsystem.entity.Account;
 import com.bank.bankingmanagementsystem.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
+import com.bank.bankingmanagementsystem.transaction.Transaction;
+
+import com.bank.bankingmanagementsystem.dto.TransactionResponse;
 
 @CrossOrigin(origins = "http://localhost:5173")
 @RestController
@@ -27,6 +31,22 @@ public class AccountController {
     public List<Account> getAllAccounts() {
         return accountService.getAllAccounts();
     }
+    @GetMapping("/my-account")
+    public Account getMyAccount(Authentication authentication) {
+
+        String email = authentication.getName();
+
+        return accountService.getMyAccount(email);
+    }
+
+    @GetMapping("/transactions")
+    public List<TransactionResponse> getMyTransactions(Authentication authentication) {
+
+        String email = authentication.getName();
+
+        return accountService.getMyTransactions(email);
+    }
+
     //get acc by ID
     @GetMapping("/{id}")
     public Account getAccountById(@PathVariable Long id) {
