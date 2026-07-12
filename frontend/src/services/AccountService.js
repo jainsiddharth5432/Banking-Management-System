@@ -2,33 +2,51 @@ import axios from "axios";
 
 const API_URL = "http://localhost:8080/api/accounts";
 
+const api = axios.create({
+    baseURL: API_URL,
+});
+
+api.interceptors.request.use((config) => {
+
+    const token = localStorage.getItem("token");
+
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
+});
+
 export const getAllAccounts = () => {
-    return axios.get(API_URL);
+    return api.get("");
 };
 
 export const createAccount = (account) => {
-    return axios.post(API_URL, account);
+    return api.post("", account);
 };
 
 export const updateAccount = (id, account) => {
-    return axios.put(`${API_URL}/${id}`, account);
+    return api.put(`/${id}`, account);
 };
 
 export const deleteAccount = (id) => {
-    return axios.delete(`${API_URL}/${id}`);
+    return api.delete(`/${id}`);
 };
+
 export const depositMoney = (id, amount) => {
-    return axios.post(
-        `http://localhost:8080/api/accounts/${id}/deposit?amount=${amount}`
-    );
+    return api.post(`/${id}/deposit?amount=${amount}`);
 };
+
 export const withdrawMoney = (id, amount) => {
-    return axios.post(
-        `${API_URL}/${id}/withdraw?amount=${amount}`
-    );
+    return api.post(`/${id}/withdraw?amount=${amount}`);
 };
+
 export const transferMoney = (fromId, toId, amount) => {
-    return axios.post(
-        `${API_URL}/transfer?fromId=${fromId}&toId=${toId}&amount=${amount}`
-    );
+    return api.post(`/transfer?fromId=${fromId}&toId=${toId}&amount=${amount}`);
+};
+export const getMyAccount = () => {
+    return api.get("/my-account");
+};
+export const getMyTransactions = () => {
+    return api.get("/transactions");
 };
